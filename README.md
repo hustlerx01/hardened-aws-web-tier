@@ -42,9 +42,7 @@ terraform destroy
 `plan` job: runs only once the repo variable `AWS_PLAN_ROLE_ARN` is set (from `terraform output github_plan_role_arn`). It assumes the role through OIDC and runs `terraform plan`.
 
 ## Screenshots
-![architecture](docs/architecture.png) <!-- TODO -->
-![alb](docs/alb.png) <!-- TODO: Nginx page through the ALB -->
-![no public ip](docs/no-public-ip.png) <!-- TODO: describe-instances output -->
+No screenshots yet. This stack has only been scanned statically (see Results); an architecture diagram, the Nginx page through the ALB and `describe-instances` output showing no public IP need a real AWS deploy and will be added after one.
 
 ## Results
 Static scan run 2026-10-12 (tfsec v1.28.14, Trivy 0.75.0, Terraform v1.9.8), using the commands above on the repo root:

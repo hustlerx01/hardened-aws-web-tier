@@ -1,0 +1,67 @@
+name: terraform-ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: fmt / validate / tfsec / trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - name: terraform fmt
+        run: terraform fmt -check -recursive
+      - name: terraform validate (no backend, no AWS creds needed)
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+      - name: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          soft_fail: false
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          exit-code: "1"
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+
+  pytest:
+    name: hardening tests (pytest + python-hcl2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements-dev.txt && pytest -q
+
+  plan:
+    # Only runs when the repo variable AWS_PLAN_ROLE_ARN is set (after the first
+    # manual `terraform apply` creates the role). Forks/PRs from forks never get it.
+    name: terraform plan (OIDC)
+    needs: static
+    if: ${{ vars.AWS_PLAN_ROLE_ARN != '' && github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && vars.AWS_PLAN_ROLE_ARN != '') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for OIDC
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: ap-south-1
+      # Needs the backend "s3" block in versions.tf uncommented first.
+      - run: terraform init -input=false
+      - run: terraform plan -input=false -lock=false -no-color

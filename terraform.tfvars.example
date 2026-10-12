@@ -1,0 +1,5 @@
+region              = "ap-south-1"
+project             = "hardened-web"
+github_repo         = "hustlerx01/hardened-aws-web-tier"
+acm_certificate_arn = ""
+single_nat_gateway  = true

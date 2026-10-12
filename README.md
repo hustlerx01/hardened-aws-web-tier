@@ -47,10 +47,12 @@ terraform destroy
 ![no public ip](docs/no-public-ip.png) <!-- TODO: describe-instances output -->
 
 ## Results
-- tfsec: [CONFIRM: 30] checks passed, 0 open, [CONFIRM: 6] accepted with reasons
-- Trivy: [CONFIRM: 0] misconfigurations
-- Resources created per apply: [CONFIRM]
-- Cost of one apply/test/destroy session: [CONFIRM] USD
+Static scan run 2026-10-12 (tfsec v1.28.14, Trivy 0.75.0, Terraform v1.9.8), using the commands above on the repo root:
+- `terraform fmt -check` / `terraform validate`: clean
+- tfsec: 30 checks passed, 0 open (critical 0 / high 0 / medium 0 / low 0), 6 accepted with reasons (inline `tfsec:ignore`, see SECURITY_FINDINGS.md)
+- Trivy (`trivy config .`): 0 misconfigurations
+- Resources created per apply: not measured yet. To get it, run `terraform plan` and read the "N to add" line.
+- Cost of one apply/test/destroy session: not measured yet. To get it, check AWS Cost Explorer for the day of the session (see COST_AND_TEARDOWN.md).
 
-## Resume bullet (fill in after running)
-> Deployed a two-AZ AWS web tier with zero public-IP servers, zero static CI keys and [CONFIRM: 0] open tfsec/Trivy findings across [CONFIRM: 30+] checks, by writing Terraform for a private-subnet Nginx tier behind an ALB, least-privilege security groups, a repo-scoped GitHub OIDC role, multi-region CloudTrail and GuardDuty, gated by a CI pipeline that fails on new misconfigurations.
+## Resume bullet
+> Deployed a two-AZ AWS web tier with zero public-IP servers, zero static CI keys and 0 open tfsec/Trivy findings across 30 passing tfsec checks, by writing Terraform for a private-subnet Nginx tier behind an ALB, least-privilege security groups, a repo-scoped GitHub OIDC role, multi-region CloudTrail and GuardDuty, gated by a CI pipeline that fails on new misconfigurations.
